@@ -10,7 +10,7 @@ __DATA__
 
 @@ index.html.ep
 % layout 'default';
-% title 'ChessInspector';
+% title 'Chess Inspector';
 Hello
 
 @@ layouts/default.html.ep
