@@ -3,7 +3,7 @@ use Mojolicious::Lite -signatures;
 
 get '/' => sub ($c) {
   $c->render(template => 'index');
-};
+} => 'index';
 
 app->start;
 __DATA__
@@ -11,13 +11,44 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'ChessInspector';
-<h1><%= title %></h1>
+Hello
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
-<html>
-  <head><title><%= title %></title></head>
+<html lang="en">
+  <head>
+    <title><%= title %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="/css/fontawesome.css" rel="stylesheet">
+    <link href="/css/solid.css" rel="stylesheet">
+    <script src="/js/jquery.min.js"></script>
+    <style>
+      a:hover, a:visited, a:link, a:active { text-decoration: none; }
+    </style>
+  </head>
   <body>
+    <div class="container">
+      <p></p>
+% if (flash('error')) {
+    %= tag h3 => (style => 'color:red') => flash('error')
+% }
+% if (flash('message')) {
+    %= tag h3 => (style => 'color:green') => flash('message')
+% }
+      <h1><a href="<%= url_for('index') %>"><%= title %></a></h1>
 <%= content %>
+      <p></p>
+      <div id="footer" class="text-muted small">
+        <hr>
+        Copyright © 2023 All rights reserved
+        <br>
+        Built by <a href="http://gene.ology.net/">Gene</a>
+        with <a href="https://www.perl.org/">Perl</a> and
+        <a href="https://mojolicious.org/">Mojolicious</a>
+      </div>
+      <p></p>
+    </div>
   </body>
 </html>
