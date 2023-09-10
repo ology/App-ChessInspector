@@ -1,17 +1,204 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite -signatures;
 
+use ChessInspector ();
+
 get '/' => sub ($c) {
-  $c->render(template => 'index');
+  my $fen  = $c->param('fen');
+  my $pgn  = $c->param('pgn')      || '';
+  my $move = $c->param('move')     || 0;
+  my $posn = $c->param('position') || 0;
+  my $prev = $c->param('previous') || $posn;
+  my $last = $c->param('last')     || '';
+  no warnings 'once';
+  $fen = $Chess::Rep::FEN_STANDARD unless $fen || $pgn;
+  use warnings 'once';
+  my $results = coverage($fen, $pgn, $move, $posn, $prev, $last);
+  $c->render(
+    template => 'index',
+    response => $results,
+    fen      => $fen,
+    pgn      => $pgn,
+  );
 } => 'index';
 
 app->start;
+
 __DATA__
 
 @@ index.html.ep
 % layout 'default';
 % title 'Chess Inspector';
-Hello
+<div class="row">
+  <div class="large-6 column">
+
+    <table class="table table-bordered">
+
+% for my $row (sort { $b <=> $a } keys $response->rows->@*) {
+
+    <tr>
+      <td style="text-align: center; border: none;"><%= $row %></td>
+
+%   for my $cell ($response->rows}{$r}->@*) {
+
+        <% colrow = cell.col _ cell.row %>
+        <% IF cell.black_can_move > 0 && cell.white_can_move > 0 %>
+            <% style = 'background: repeating-linear-gradient(45deg, lightblue, lightblue 10px, tan 10px, tan 20px);' %>
+        <% ELSIF cell.black_can_move > 0 %>
+            <% style = 'background: tan;' %>
+        <% ELSIF cell.white_can_move > 0 %>
+            <% style = 'background: lightblue;' %>
+        <% ELSIF cell.protected > 0 && cell.threatened > 0 %>
+            <% style = 'background: repeating-linear-gradient(45deg, lightgreen, lightgreen 10px, yellow 10px, yellow 20px);' %>
+        <% ELSIF cell.threatened > 0 %>
+            <% style = 'background: yellow;' %>
+        <% ELSIF cell.protected > 0 %>
+            <% style = 'background: lightgreen;' %>
+        <% ELSE %>
+            <% style = 'background: white;' %>
+        <% END %>
+        <% style = style _ ' text-align: center; font-size: xx-large; border-collapse: collapse;' %>
+        <td id="<% colrow %>" height="55" width="55" style="<% style %>">
+            <a title="<% cell.occupant %> - <% colrow %>
+Protects: <% cell.protects %>
+Threatens: <% cell.threatens %>
+Protected by: <% cell.is_protected_by %>
+Threatened by: <% cell.is_threatened_by %>"
+            style="color:#000000"><% cell.piece %></a>
+        </td>
+        <% END %>
+    </tr>
+    <% END %>
+    <% style = 'text-align: center; border: none;' %>
+    <tr>
+        <td style="<% style %>"></td>
+        <td style="<% style %>">A</td>
+        <td style="<% style %>">B</td>
+        <td style="<% style %>">C</td>
+        <td style="<% style %>">D</td>
+        <td style="<% style %>">E</td>
+        <td style="<% style %>">F</td>
+        <td style="<% style %>">G</td>
+        <td style="<% style %>">H</td>
+    </tr>
+
+    <% IF pgn %>
+        <% IF response.game.to_move == 0 %>
+            <% last_move = response.white.last_move %>
+        <% ELSE %>
+            <% last_move = response.black.last_move %>
+        <% END %>
+        <tr>
+            <td colspan="9" style="text-align: center; border: none;">
+              <a href="/?pgn=<% pgn %>&last=<% last_move %>&move=0" title="Start" class="tiny button">|&#60;</a>
+              <a
+                <% IF response.game.reverse > 0 %>href="/?pgn=<% pgn %>&last=<% last_move %>&move=<% response.game.reverse %>"<% END %>
+                title="Step back" class="tiny button">&#60;</a>
+              <a
+                <% IF response.game.forward > 0 && response.game.forward <= response.game.total %>href="/?pgn=<% pgn %>&last=<% last_move %>&move=<% response.game.forward %>"<% END %>
+                title="Step forward" class="tiny button">&#62;</a>
+              <a href="/?pgn=<% pgn %>&last=<% last_move %>&move=-1" title="End" class="tiny button">&#62;|</a>
+            </td>
+        </tr>
+    <% END %>
+
+</table>
+
+</div>
+
+<div class="large-3 column">
+  <p/>
+  <h3>
+  <% IF response.game.to_move == 0 || !pgn %>
+    White
+  <% ELSE %>
+    White to move
+  <% END %>
+  </h3>
+  <div class="panel">
+    <p><% response.white.name || '&nbsp;' %></p>
+    <p>Moves made: <% response.white.moves_made %> / <% response.game.half %></p>
+    <p>Last move: <% response.white.last_move %>
+    <p style="background: lightblue; padding: 5px">Can 
+    <% IF response.game.to_move == 128 %>move to: <% ELSE %>threaten: <% END %>
+    <% response.white.can_move %>
+    cell<% IF response.white.can_move != 1 %>s<% END %></p>
+    <p style="background: yellow; padding: 5px">Threaten: <% response.white.threaten %>
+    time<% IF response.white.threaten != 1 %>s<% END %></p>
+    <p style="background: lightgreen; padding: 5px">Protect: <% response.white.protect %>
+    time<% IF response.white.protect != 1 %>s<% END %></p>
+  </div>
+</div>
+<div class="large-3 column">
+  <p/>
+  <h3>
+  <% IF response.game.to_move == 128 %>
+    Black
+  <% ELSE %>
+    Black to move
+  <% END %>
+  </h3>
+  <div class="panel">
+    <p><% response.black.name || '&nbsp;' %></p>
+    <p>Moves made: <% response.black.moves_made %> / <% response.game.half %></p>
+    <p>Last move: <% response.black.last_move %>
+    <p style="background: tan; padding: 5px">Can 
+    <% IF response.game.to_move == 0 %>move to: <% ELSE %>threaten: <% END %>
+    <% response.black.can_move %>
+    cell<% IF response.black.can_move != 1 %>s<% END %></p>
+    <p style="background: yellow; padding: 5px">Threaten: <% response.black.threaten %>
+    time<% IF response.black.threaten != 1 %>s<% END %></p>
+    <p style="background: lightgreen; padding: 5px">Protect: <% response.black.protect %>
+    time<% IF response.black.protect != 1 %>s<% END %></p>
+  </div>
+</div>
+
+<form>
+<div class="large-6 column">
+  <select name="pgn" onchange="this.form.submit()">
+    <option value="">Select a game</option>
+    <% FOREACH g = response.games.sort('name') %>
+        <option value="<% g.name %>"<% IF pgn == g.name %> selected<% END %>><% g.name %></option>
+    <% END %>
+  </select>
+</form>
+
+  <div>
+  <% IF pgn && ( response.game.forward == 0 || response.game.forward > response.game.total ) %>
+    <b>Result:</b> <% response.game.meta.result %>
+  <% END %>
+  <% IF response.game.meta.event %>
+    </br>
+    <b>Event:</b> <% response.game.meta.event %>
+  <% END %>
+  <% IF response.game.meta.site %>
+    <br/>
+    <b>Site:</b> <% response.game.meta.site %>
+  <% END %>
+  <% IF response.game.meta.date %>
+    <br/>
+    <b>Date:</b> <% response.game.meta.date %>
+  <% END %>
+  <% IF response.game.meta.round %>
+    <br/>
+    <b>Round:</b> <% response.game.meta.round %>
+  <% END %>
+  <% IF response.game.meta.eco %>
+    <br/>
+    <b>ECO:</b> <% response.game.meta.eco %>
+  <% END %>
+  </div>
+</div>
+
+</div>
+
+<form>
+<div class="row">
+    <div class="large-12 column" style="text-align: center">
+        <input type="text" name="fen" value="<% response.game.fen %>" />
+    </div>
+</div>
+</form>
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
