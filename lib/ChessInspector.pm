@@ -306,7 +306,7 @@ sub parse_pgn {
     return \%vals;
 }
 
-true;
+1;
 
 __END__
 
