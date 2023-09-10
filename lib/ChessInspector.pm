@@ -265,47 +265,6 @@ sub _fen_from_pgn {
     return $fen, $#moves, $p->white, $p->black, $last_move, $meta;
 }
 
-sub parse_pgn {
-    my $file = shift;
-
-    my $pgn = Chess::PGN::Parse->new($file);
-
-    my $games = $pgn->quick_read_all;
-
-    my %index;
-
-    for my $game ( @$games ) {
-        my $color = $game->{White} =~ /Kasparov/ ? 0 : 1;
-        next if $color;
-
-        my $it = natatime 2, @{ $game->{GameMoves} };
-
-        my $i = 0;
-        while ( my @tuple = $it->() ) {
-            $i++;
-            my $move = $tuple[$color];
-            $index{ $i }->{$move}++ if $move;
-        }
-    }
-
-    my %vals;
-
-    for my $i ( sort { $a <=> $b } keys %index ) {
-        for my $row ( 1 .. 8 ) {
-            for my $col ( 'a' .. 'h' ) {
-                my $move = $col . $row;
-                push @{ $vals{$i}->{$row} }, {
-                    row => $row,
-                    col => $col,
-                    exists $index{$i}->{$move} ? ( val => $index{$i}->{$move} ) : (),
-                };
-            }
-        }
-    }
-
-    return \%vals;
-}
-
 1;
 
 __END__
@@ -316,7 +275,7 @@ Gene Boggs <gene@cpan.org>
  
 =head1 COPYRIGHT AND LICENSE
  
-This software is copyright (c) 2019 by Gene Boggs.
+This software is copyright (c) 2023 by Gene Boggs.
  
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
