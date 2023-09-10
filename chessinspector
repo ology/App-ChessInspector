@@ -34,52 +34,52 @@ __DATA__
 
     <table class="table table-bordered">
 
-% for my $row (sort { $b <=> $a } keys $response->rows->@*) {
+% for my $row (sort { $b <=> $a } keys $response->{rows}->@*) {
 
     <tr>
       <td style="text-align: center; border: none;"><%= $row %></td>
 
-%   for my $cell ($response->rows}{$r}->@*) {
-
-        <% colrow = cell.col _ cell.row %>
-        <% IF cell.black_can_move > 0 && cell.white_can_move > 0 %>
-            <% style = 'background: repeating-linear-gradient(45deg, lightblue, lightblue 10px, tan 10px, tan 20px);' %>
-        <% ELSIF cell.black_can_move > 0 %>
-            <% style = 'background: tan;' %>
-        <% ELSIF cell.white_can_move > 0 %>
-            <% style = 'background: lightblue;' %>
-        <% ELSIF cell.protected > 0 && cell.threatened > 0 %>
-            <% style = 'background: repeating-linear-gradient(45deg, lightgreen, lightgreen 10px, yellow 10px, yellow 20px);' %>
-        <% ELSIF cell.threatened > 0 %>
-            <% style = 'background: yellow;' %>
-        <% ELSIF cell.protected > 0 %>
-            <% style = 'background: lightgreen;' %>
-        <% ELSE %>
-            <% style = 'background: white;' %>
-        <% END %>
-        <% style = style _ ' text-align: center; font-size: xx-large; border-collapse: collapse;' %>
-        <td id="<% colrow %>" height="55" width="55" style="<% style %>">
-            <a title="<% cell.occupant %> - <% colrow %>
-Protects: <% cell.protects %>
-Threatens: <% cell.threatens %>
-Protected by: <% cell.is_protected_by %>
-Threatened by: <% cell.is_threatened_by %>"
-            style="color:#000000"><% cell.piece %></a>
-        </td>
-        <% END %>
+%   my $cell   = $response->{rows}{$row};
+%   my $colrow = $cell->{col} . $cell->{row};
+%   my $style  = '';
+%   if ($cell->{black_can_move} > 0 && $cell->{white_can_move} > 0) {
+%     $style = 'background: repeating-linear-gradient(45deg, lightblue, lightblue 10px, tan 10px, tan 20px);';
+%   } elsif ($cell->{black_can_move} > 0) {
+%     $style = 'background: tan;';
+%   } elsif ($cell->{white_can_move} > 0) {
+%     $style = 'background: lightblue;';
+%   } elsif ($cell->{protected} > 0 && $cell->{threatened} > 0) {
+%     $style = 'background: repeating-linear-gradient(45deg, lightgreen, lightgreen 10px, yellow 10px, yellow 20px);';
+%   } elsif ($cell->{threatened} > 0) {
+%     $style = 'background: yellow;';
+%   } elsif ($cell->{protected} > 0) {
+%     $style = 'background: lightgreen;';
+%   } else {
+%     $style = 'background: white;';
+%   }
+%   $style = $style _ ' text-align: center; font-size: xx-large; border-collapse: collapse;';
+      <td id="<%= $colrow %>" height="55" width="55" style="<%= $style %>">
+        <a style="color:#000000" title="<%= $cell->{occupant} %> - <%= $colrow %>
+Protects: <%= $cell->{protects} %>
+Threatens: <%= $cell->{threatens} %>
+Protected by: <%= $cell->{is_protected_by} %>
+Threatened by: <%= $cell->{is_threatened_by} %>"
+        ><%= $cell->{piece} %></a>
+      </td>
+% }
     </tr>
-    <% END %>
-    <% style = 'text-align: center; border: none;' %>
+% }
+% $style = 'text-align: center; border: none;';
     <tr>
-        <td style="<% style %>"></td>
-        <td style="<% style %>">A</td>
-        <td style="<% style %>">B</td>
-        <td style="<% style %>">C</td>
-        <td style="<% style %>">D</td>
-        <td style="<% style %>">E</td>
-        <td style="<% style %>">F</td>
-        <td style="<% style %>">G</td>
-        <td style="<% style %>">H</td>
+      <td style="<%= $style %>"></td>
+      <td style="<%= $style %>">A</td>
+      <td style="<%= $style %>">B</td>
+      <td style="<%= $style %>">C</td>
+      <td style="<%= $style %>">D</td>
+      <td style="<%= $style %>">E</td>
+      <td style="<%= $style %>">F</td>
+      <td style="<%= $style %>">G</td>
+      <td style="<%= $style %>">H</td>
     </tr>
 
     <% IF pgn %>
