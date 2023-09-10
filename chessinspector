@@ -57,7 +57,7 @@ __DATA__
 %     } else {
 %       $style = 'background: white;';
 %     }
-%     $style = $style _ ' text-align: center; font-size: xx-large; border-collapse: collapse;';
+%     $style = $style . ' text-align: center; font-size: xx-large; border-collapse: collapse;';
       <td id="<%= $colrow %>" height="55" width="55" style="<%= $style %>">
         <a style="color:#000000" title="<%= $cell->{occupant} %> - <%= $colrow %>
 Protects: <%= $cell->{protects} %>
