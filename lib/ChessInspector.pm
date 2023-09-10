@@ -20,35 +20,6 @@ Visualize the potential energy of a chess game
 
 =cut
 
-get '/' => sub {
-    my $fen  = params->{fen};
-    my $pgn  = params->{pgn}      || '';
-    my $move = params->{move}     || 0;
-    my $posn = params->{position} || 0;
-    my $prev = params->{previous} || $posn;
-    my $last = params->{last}     || '';
-
-    $fen = Chess::Rep::FEN_STANDARD if !$fen && !$pgn;
-
-    my $results = coverage( $fen, $pgn, $move, $posn, $prev, $last );
-
-    template 'index', {
-        response => $results,
-        fen      => $fen,
-        pgn      => $pgn,
-    };
-};
-
-get '/history' => sub {
-    my $index = parse_pgn('public/kasparov.pgn');
-    my $move = params->{move} || 1;
-    template 'history', {
-        index => $index->{$move},
-        move  => $move,
-        total => scalar( keys %$index ),
-    };
-};
-
 sub coverage {
     my ( $fen, $pgn, $move, $posn, $prev, $last ) = @_;
 
