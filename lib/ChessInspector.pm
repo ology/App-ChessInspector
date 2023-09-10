@@ -16,7 +16,7 @@ ChessInspector
 
 =head1 DESCRIPTION
 
-Visualize the potential energy of a chess game
+Visualize the potential energy of a chess game, ply by ply.
 
 =cut
 
