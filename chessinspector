@@ -107,47 +107,79 @@ Threatened by: <%= $cell->{is_threatened_by} %>"
 <div class="large-3 column">
   <p/>
   <h3>
-  <% IF response.game.to_move == 0 || !pgn %>
+% if ($response->{game}{to_move} == 0 || !pgn) {
     White
-  <% ELSE %>
+% } else {
     White to move
-  <% END %>
+% }
   </h3>
   <div class="panel">
-    <p><% response.white.name || '&nbsp;' %></p>
-    <p>Moves made: <% response.white.moves_made %> / <% response.game.half %></p>
-    <p>Last move: <% response.white.last_move %>
+    <p><%= $response->{white}{name} || '&nbsp;' %></p>
+    <p>Moves made: <%= $response->{white}{moves_made} %> / <%= $response->{game}{half} %></p>
+    <p>Last move: <%= $response->{white}{last_move} %>
     <p style="background: lightblue; padding: 5px">Can 
-    <% IF response.game.to_move == 128 %>move to: <% ELSE %>threaten: <% END %>
-    <% response.white.can_move %>
-    cell<% IF response.white.can_move != 1 %>s<% END %></p>
-    <p style="background: yellow; padding: 5px">Threaten: <% response.white.threaten %>
-    time<% IF response.white.threaten != 1 %>s<% END %></p>
-    <p style="background: lightgreen; padding: 5px">Protect: <% response.white.protect %>
-    time<% IF response.white.protect != 1 %>s<% END %></p>
+% if ($response->{game}{to_move} == 128) {
+    move to:
+% } else {
+    threaten:
+% }
+    <%= $response->{white}{can_move} %>
+    cell
+% if ($response->{white}{can_move} != 1) {
+    s
+% }
+    </p>
+    <p style="background: yellow; padding: 5px">Threaten: <%= $response->{white}{threaten} %>
+    time
+% if ($response->{white}{threaten} != 1) {
+    s
+% }
+    </p>
+    <p style="background: lightgreen; padding: 5px">Protect: <%= $response->{white}{protect} %>
+    time
+% if ($response->{white}{protect} != 1) {
+    s
+% }
+    </p>
   </div>
 </div>
 <div class="large-3 column">
   <p/>
   <h3>
-  <% IF response.game.to_move == 128 %>
+% if ($response->{game}{to_move} == 128) {
     Black
-  <% ELSE %>
+% } else {
     Black to move
-  <% END %>
+% }
   </h3>
   <div class="panel">
-    <p><% response.black.name || '&nbsp;' %></p>
-    <p>Moves made: <% response.black.moves_made %> / <% response.game.half %></p>
-    <p>Last move: <% response.black.last_move %>
+    <p><%= $response->{black}{name} || '&nbsp;' %></p>
+    <p>Moves made: <%= $response->{black}{moves_made} %> / <%= $response->{game}{half} %></p>
+    <p>Last move: <%= $response->{black}{last_move} %>
     <p style="background: tan; padding: 5px">Can 
-    <% IF response.game.to_move == 0 %>move to: <% ELSE %>threaten: <% END %>
-    <% response.black.can_move %>
-    cell<% IF response.black.can_move != 1 %>s<% END %></p>
-    <p style="background: yellow; padding: 5px">Threaten: <% response.black.threaten %>
-    time<% IF response.black.threaten != 1 %>s<% END %></p>
-    <p style="background: lightgreen; padding: 5px">Protect: <% response.black.protect %>
-    time<% IF response.black.protect != 1 %>s<% END %></p>
+% if ($response->{game}{to_move} == 0) {
+    move to:
+% } else {
+    threaten:
+% }
+    <%= $response->{black}{can_move} %>
+    cell
+% if ($response->{black}{can_move} != 1) {
+    s
+% }
+    </p>
+    <p style="background: yellow; padding: 5px">Threaten: <%= $response->{black}{threaten} %>
+    time
+% if ($response->{black}{threaten} != 1) {
+    s
+% }
+    </p>
+    <p style="background: lightgreen; padding: 5px">Protect: <%= $response->{black}{protect} %>
+    time
+% if ($response->{black}{protect} != 1) {
+    s
+% }
+    </p>
   </div>
 </div>
 
@@ -155,35 +187,35 @@ Threatened by: <%= $cell->{is_threatened_by} %>"
 <div class="large-6 column">
   <select name="pgn" onchange="this.form.submit()">
     <option value="">Select a game</option>
-    <% FOREACH g = response.games.sort('name') %>
+    <% FOREACH g = $response->{games.sort('name') %>
         <option value="<% g.name %>"<% IF pgn == g.name %> selected<% END %>><% g.name %></option>
     <% END %>
   </select>
 </form>
 
   <div>
-  <% IF pgn && ( response.game.forward == 0 || response.game.forward > response.game.total ) %>
-    <b>Result:</b> <% response.game.meta.result %>
+  <% IF pgn && ( $response->{game.forward == 0 || $response->{game.forward > $response->{game.total ) %>
+    <b>Result:</b> <% $response->{game.meta.result %>
   <% END %>
-  <% IF response.game.meta.event %>
+  <% IF $response->{game.meta.event %>
     </br>
-    <b>Event:</b> <% response.game.meta.event %>
+    <b>Event:</b> <% $response->{game.meta.event %>
   <% END %>
-  <% IF response.game.meta.site %>
+  <% IF $response->{game.meta.site %>
     <br/>
-    <b>Site:</b> <% response.game.meta.site %>
+    <b>Site:</b> <% $response->{game.meta.site %>
   <% END %>
-  <% IF response.game.meta.date %>
+  <% IF $response->{game.meta.date %>
     <br/>
-    <b>Date:</b> <% response.game.meta.date %>
+    <b>Date:</b> <% $response->{game.meta.date %>
   <% END %>
-  <% IF response.game.meta.round %>
+  <% IF $response->{game.meta.round %>
     <br/>
-    <b>Round:</b> <% response.game.meta.round %>
+    <b>Round:</b> <% $response->{game.meta.round %>
   <% END %>
-  <% IF response.game.meta.eco %>
+  <% IF $response->{game.meta.eco %>
     <br/>
-    <b>ECO:</b> <% response.game.meta.eco %>
+    <b>ECO:</b> <% $response->{game.meta.eco %>
   <% END %>
   </div>
 </div>
@@ -193,7 +225,7 @@ Threatened by: <%= $cell->{is_threatened_by} %>"
 <form>
 <div class="row">
     <div class="large-12 column" style="text-align: center">
-        <input type="text" name="fen" value="<% response.game.fen %>" />
+        <input type="text" name="fen" value="<% $response->{game.fen %>" />
     </div>
 </div>
 </form>
